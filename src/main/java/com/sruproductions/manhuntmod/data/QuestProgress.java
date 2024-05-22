@@ -2,12 +2,10 @@ package com.sruproductions.manhuntmod.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +36,7 @@ public class QuestProgress {
     public static class Ability {
         private String name;
         private String description;
+        private transient Stage stage; // Reference to the parent stage
 
         public Ability(String name, String description) {
             this.name = name;
@@ -51,27 +50,40 @@ public class QuestProgress {
         public String getDescription() {
             return description;
         }
+
+        public Stage getStage() {
+            return stage;
+        }
+
+        public void setStage(Stage stage) {
+            this.stage = stage;
+        }
     }
 
     public static class Stage {
         private String name;
-        private Ability ability;
+        private List<Ability> abilities;
         private List<Quest> quests;
         private boolean completed;
 
-        public Stage(String name, Ability ability, List<Quest> quests, boolean completed) {
+        public Stage(String name, List<Ability> abilities, List<Quest> quests, boolean completed) {
             this.name = name;
-            this.ability = ability;
+            this.abilities = abilities;
             this.quests = quests;
             this.completed = completed;
+
+            // Set the parent stage reference for each ability
+            for (Ability ability : abilities) {
+                ability.setStage(this);
+            }
         }
 
         public String getName() {
             return name;
         }
 
-        public Ability getAbility() {
-            return ability;
+        public List<Ability> getAbilities() {
+            return abilities;
         }
 
         public List<Quest> getQuests() {
@@ -91,7 +103,6 @@ public class QuestProgress {
         }
         return null; // All stages are completed
     }
-
 
     private List<Stage> stages;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

@@ -2,11 +2,12 @@
   "stages": [
     {
       "name": "Stage 1",
-      "ability":
-      {
-        "name": "Sonic Boom",
-        "description": ""
-      },
+      "abilities":[
+        {
+          "name": "Sonic Boom",
+          "description": ""
+        }
+      ],
       "quests": [
         { "name": "Kill a cow", "completed": false },
         { "name": "Mine 1 Lapis Lazuli", "completed": false },
@@ -16,11 +17,16 @@
     },
     {
       "name": "Stage 2",
-      "ability":
-      {
-        "name": "Sculk Tentacles and Spider Aspect",
-        "description": ""
-      },
+      "abilities":[
+        {
+          "name": "Sculk Tentacles",
+          "description": ""
+        },
+        {
+          "name": "Spider Aspect",
+          "description": ""
+        }
+      ],
       "quests": [
         { "name": "Shoot a hunter with a bow", "completed": false },
         { "name": "Enter the nether", "completed": false },
@@ -30,11 +36,12 @@
     },
     {
       "name": "Stage 3",
-      "ability":
-      {
-        "name": "Acid Orb",
-        "description": ""
-      },
+      "abilities":[
+        {
+          "name": "Acid Orb",
+          "description": ""
+        }
+      ],
       "quests": [
         { "name": "Enchant a sword with sharpness 1", "completed": false },
         { "name": "Craft a bed and set your spawn", "completed": false },
@@ -44,11 +51,12 @@
     },
     {
       "name": "Stage 4",
-      "ability":
-      {
-        "name": "Starfall",
-        "description": ""
-      },
+      "abilities":[
+        {
+          "name": "Starfall",
+          "description": ""
+        }
+      ],
       "quests": [
         { "name": "Equip full diamond armor", "completed": false },
         { "name": "Find an ender pearl", "completed": false },

@@ -7,7 +7,6 @@ import com.sruproductions.manhuntmod.data.QuestProgress.Stage;
 import com.sruproductions.manhuntmod.screen.components.AbilityButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -20,13 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ToggleScreen extends Screen {
-    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(ManhuntMod.MOD_ID,
-            "textures/gui/gui_prototype2.png");
+    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(ManhuntMod.MOD_ID, "textures/gui/gui_prototype2.png");
 
-    private boolean isToggled = false;
     private static final int BACKGROUND_WIDTH = 260;
     private static final int BACKGROUND_HEIGHT = 229;
-    private Button toggleButton;
 
     private final QuestProgress questProgress;
     private final File saveFile;
@@ -41,8 +37,7 @@ public class ToggleScreen extends Screen {
 
     private void loadQuestProgress() {
         try {
-            questProgress.loadFromFile(saveFile, new ResourceLocation("manhuntmod",
-                    "config/quest_progress.json"));
+            questProgress.loadFromFile(saveFile, new ResourceLocation("manhuntmod", "config/quest_progress.json"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -58,48 +53,48 @@ public class ToggleScreen extends Screen {
 
     @Override
     protected void init() {
-        int buttonWidth = 80;
-        int buttonHeight = 20;
-        int x = (width - buttonWidth) / 2;
-        int y = (height - buttonHeight) / 2;
-
-//        this.toggleButton = addRenderableWidget(Button.builder(Component.literal("Toggle"), button -> {
-//            isToggled = !isToggled;
-//            button.setMessage(Component.literal(isToggled ? "Toggle On" : "Toggle Off"));
-//        }).pos(x, y).size(buttonWidth, buttonHeight).build());
-
-        // Initialize ability buttons
         initAbilityButtons();
     }
 
     private void initAbilityButtons() {
         abilityButtons = new ArrayList<>();
-        int buttonWidth = 40;
-        int buttonHeight = 40;
-        int circleDiameter = 60;
-        int padding = 20;
+        int buttonWidth = 30;
+        int buttonHeight = 30;
 
-        int startX = (width - BACKGROUND_WIDTH) / 2;
-        int startY = (height - BACKGROUND_HEIGHT) / 2;
-
-        int[][] circlePositions = {
-                { startX + 30, startY + 20 },
-                { startX + 90 + circleDiameter + padding, startY + 20 },
-                { startX + 30, startY + 55 + circleDiameter + padding },
-                { startX + 90 + circleDiameter + padding, startY + 55 + circleDiameter + padding }
+        // Manually define positions for each ability button
+        int[][] buttonPositions = {
+                {155, 55}, // Stage 1
+                {275, 55}, {315, 55}, // Stage 2
+                {155, 170}, // Stage 3
+                {295, 170} // Stage 4
         };
 
-        int index = 0;
+        int positionIndex = 0;
+
         for (Stage stage : questProgress.getStages()) {
-            if (index >= circlePositions.length) break;
+            List<QuestProgress.Ability> abilities = stage.getAbilities();
+            for (QuestProgress.Ability ability : abilities) {
+                if (positionIndex >= buttonPositions.length) break;
 
-            int[] position = circlePositions[index];
-            int buttonX = position[0] + (circleDiameter - buttonWidth) / 2;
-            int buttonY = position[1] + (circleDiameter - buttonHeight) / 2;
+                int[] position = buttonPositions[positionIndex];
+                int buttonX = position[0];
+                int buttonY = position[1];
 
-            AbilityButton abilityButton = new AbilityButton(buttonX, buttonY, buttonWidth, buttonHeight, stage.getAbility());
-            abilityButtons.add(abilityButton);
-            index++;
+                AbilityButton abilityButton = new AbilityButton(buttonX, buttonY, buttonWidth, buttonHeight,
+                        List.of(ability));
+
+                // Disable the button if the stage is not completed
+                abilityButton.active = stage.isCompleted();
+
+                // Set texture based on ability name
+                String abilityName = ability.getName().toLowerCase().replace(" ", "_");
+                ResourceLocation abilityTexture = new ResourceLocation(ManhuntMod.MOD_ID, "textures/gui/abilities/" + abilityName + ".png");
+                abilityButton.setTexture(abilityTexture);
+
+                abilityButtons.add(abilityButton);
+
+                positionIndex++;
+            }
         }
     }
 
@@ -115,19 +110,36 @@ public class ToggleScreen extends Screen {
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
+        // Manually define positions for each stage name
+        int[][] stagePositions = {
+                {170, 35},
+                {310, 35},
+                {170, 150},
+                {310, 150}
+        };
+
+        for (int i = 0; i < questProgress.getStages().size(); i++) {
+            if (i >= stagePositions.length) break;
+
+            Stage stage = questProgress.getStages().get(i);
+            int[] stagePosition = stagePositions[i];
+            pGuiGraphics.drawCenteredString(Minecraft.getInstance().font, stage.getName(),
+                    stagePosition[0], stagePosition[1], 0xFFFFFF);
+        }
+
         for (AbilityButton abilityButton : abilityButtons) {
             abilityButton.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 
         for (AbilityButton abilityButton : abilityButtons) {
-            if (abilityButton.isHovered(pMouseX, pMouseY)) {
-                renderTooltip(pGuiGraphics, pMouseX, pMouseY, abilityButton.getAbility());
+            if (abilityButton.isHovered()) {
+                renderTooltip(pGuiGraphics, pMouseX, pMouseY, abilityButton.getAbilities());
             }
         }
     }
 
-    private void renderTooltip(GuiGraphics pGuiGraphics, int mouseX, int mouseY, QuestProgress.Ability ability) {
-        List<String> lines = getStrings(ability);
+    private void renderTooltip(GuiGraphics pGuiGraphics, int mouseX, int mouseY, List<QuestProgress.Ability> abilities) {
+        List<String> lines = getStrings(abilities);
 
         int tooltipWidth = lines.stream().mapToInt(line -> font.width(line)).max().orElse(0);
         int tooltipHeight = lines.size() * (font.lineHeight + 2);
@@ -135,7 +147,6 @@ public class ToggleScreen extends Screen {
         int tooltipX = mouseX + 12;
         int tooltipY = mouseY - 12;
 
-        // Adjust tooltip position if it would go off the screen
         if (tooltipX + tooltipWidth > width) {
             tooltipX = mouseX - tooltipWidth - 12;
         }
@@ -143,30 +154,34 @@ public class ToggleScreen extends Screen {
             tooltipY = mouseY - tooltipHeight - 12;
         }
 
-        pGuiGraphics.fillGradient(tooltipX - 3, tooltipY - 3, tooltipX + tooltipWidth + 3, tooltipY + tooltipHeight + 3,
-                -1073741824, -1073741824);
+        pGuiGraphics.fillGradient(tooltipX - 3, tooltipY - 3, tooltipX + tooltipWidth + 3,
+                tooltipY + tooltipHeight + 3, -1073741824, -1073741824);
 
-        float scale = 0.75f; // Adjust scale factor to make font smaller
+        float scale = 0.75f;
         pGuiGraphics.pose().pushPose();
         pGuiGraphics.pose().scale(scale, scale, 1.0F);
         for (int i = 0; i < lines.size(); i++) {
-            pGuiGraphics.drawString(font, lines.get(i), (int)((tooltipX / scale)),
-                    (int)((tooltipY + i * (font.lineHeight + 2)) / scale), 0xFFFFFF);
+            pGuiGraphics.drawString(font, lines.get(i), (int) (tooltipX / scale),
+                    (int) ((tooltipY + i * (font.lineHeight + 2)) / scale), 0xFFFFFF);
         }
         pGuiGraphics.pose().popPose();
     }
 
-    private @NotNull List<String> getStrings(QuestProgress.Ability ability) {
+    private @NotNull List<String> getStrings(List<QuestProgress.Ability> abilities) {
         List<String> lines = new ArrayList<>();
-        lines.add("Ability: " + ability.getName());
-        lines.add("Description: " + ability.getDescription());
+        for (QuestProgress.Ability ability : abilities) {
+            lines.add("Ability: " + ability.getName());
+            lines.add("Description: " + ability.getDescription());
 
-        for (Stage stage : questProgress.getStages()) {
-            if (stage.getAbility().getName().equals(ability.getName())) {
-                lines.add("Quests:");
-                for (Quest quest : stage.getQuests()) {
-                    String questStatus = quest.isCompleted() ? "Completed" : "Incomplete";
-                    lines.add("- " + quest.getName() + " (" + questStatus + ")");
+            for (Stage stage : questProgress.getStages()) {
+                for (QuestProgress.Ability stageAbility : stage.getAbilities()) {
+                    if (stageAbility.getName().equals(ability.getName())) {
+                        lines.add("Quests:");
+                        for (Quest quest : stage.getQuests()) {
+                            String questStatus = quest.isCompleted() ? "Completed" : "Incomplete";
+                            lines.add("- " + quest.getName() + " (" + questStatus + ")");
+                        }
+                    }
                 }
             }
         }
@@ -176,10 +191,15 @@ public class ToggleScreen extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_G) {
-            this.minecraft.setScreen(null); // Close the screen when G is pressed
-            saveQuestProgress(); // Save progress when exiting the screen
+            this.minecraft.setScreen(null);
+            saveQuestProgress();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 }
