@@ -36,7 +36,6 @@ public class QuestProgress {
     public static class Ability {
         private String name;
         private String description;
-        private transient Stage stage; // Reference to the parent stage
 
         public Ability(String name, String description) {
             this.name = name;
@@ -49,14 +48,6 @@ public class QuestProgress {
 
         public String getDescription() {
             return description;
-        }
-
-        public Stage getStage() {
-            return stage;
-        }
-
-        public void setStage(Stage stage) {
-            this.stage = stage;
         }
     }
 
@@ -71,11 +62,6 @@ public class QuestProgress {
             this.abilities = abilities;
             this.quests = quests;
             this.completed = completed;
-
-            // Set the parent stage reference for each ability
-            for (Ability ability : abilities) {
-                ability.setStage(this);
-            }
         }
 
         public String getName() {
@@ -92,6 +78,15 @@ public class QuestProgress {
 
         public boolean isCompleted() {
             return completed;
+        }
+
+        public void checkCompletion() {
+            for (Quest quest : quests) {
+                if (!quest.isCompleted()) {
+                    return;
+                }
+            }
+            completed = true;
         }
     }
 

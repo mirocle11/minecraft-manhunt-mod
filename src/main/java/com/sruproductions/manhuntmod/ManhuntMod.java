@@ -2,6 +2,7 @@ package com.sruproductions.manhuntmod;
 
 import com.mojang.logging.LogUtils;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
+import com.sruproductions.manhuntmod.quest.QuestTracker;
 import com.sruproductions.manhuntmod.screen.ToggleScreen;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -41,7 +42,7 @@ public class ManhuntMod {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // Any common setup code goes here
+        MinecraftForge.EVENT_BUS.register(new QuestTracker());
     }
 
     private void onClientSetup(final FMLClientSetupEvent event) {

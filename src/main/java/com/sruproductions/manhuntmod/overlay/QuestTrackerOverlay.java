@@ -8,10 +8,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.common.MinecraftForge;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,11 +19,12 @@ import java.io.IOException;
 @Mod.EventBusSubscriber(modid = "manhuntmod", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class QuestTrackerOverlay {
 
-    private static final File SAVE_FILE = new File(Minecraft.getInstance().gameDirectory, "config/quest_progress.json");
+    private static final File SAVE_FILE = new File(Minecraft.getInstance().gameDirectory, "quest_progress.json");
     private static final QuestProgress questProgress = new QuestProgress();
 
     public static void init(final FMLClientSetupEvent event) {
         loadQuestProgress();
+        MinecraftForge.EVENT_BUS.register(new QuestTrackerOverlay());
     }
 
     private static void loadQuestProgress() {
@@ -47,7 +48,7 @@ public class QuestTrackerOverlay {
         int y = 10;
 
         // Render the current stage name
-        drawString(guiGraphics, currentStage.getName(), x, y, 0xFF0000);
+        drawString(guiGraphics, currentStage.getName(), x, y, 0xFFFFFF);
         y += 12;
 
         // Render the quests
