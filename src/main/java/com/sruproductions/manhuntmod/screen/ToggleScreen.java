@@ -5,6 +5,7 @@ import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.data.QuestProgress.Quest;
 import com.sruproductions.manhuntmod.data.QuestProgress.Stage;
 import com.sruproductions.manhuntmod.screen.components.AbilityButton;
+import com.sruproductions.manhuntmod.ModResources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,41 +14,36 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ToggleScreen extends Screen {
-    private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(ManhuntMod.MOD_ID, "textures/gui/gui_prototype2.png");
-
     private static final int BACKGROUND_WIDTH = 260;
     private static final int BACKGROUND_HEIGHT = 229;
 
     private final QuestProgress questProgress;
-    private final File saveFile;
     private List<AbilityButton> abilityButtons;
 
     public ToggleScreen() {
         super(Component.literal("Toggle Screen"));
         this.questProgress = new QuestProgress();
-        this.saveFile = new File(Minecraft.getInstance().gameDirectory, "quest_progress.json");
         loadQuestProgress();
     }
 
     private void loadQuestProgress() {
         try {
-            questProgress.loadFromFile(saveFile, new ResourceLocation("manhuntmod", "config/quest_progress.json"));
+            questProgress.loadFromFile(ModResources.QUEST_PROGRESS_JSON);
         } catch (IOException e) {
-            e.printStackTrace();
+            ManhuntMod.LOGGER.error("Failed to load quest progress", e);
         }
     }
 
     private void saveQuestProgress() {
         try {
-            questProgress.saveToFile(saveFile);
+            questProgress.saveToFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            ManhuntMod.LOGGER.error("Failed to save quest progress", e);
         }
     }
 
@@ -61,70 +57,82 @@ public class ToggleScreen extends Screen {
         int buttonWidth = 30;
         int buttonHeight = 30;
 
-        // Manually define positions for each ability button
-        int[][] buttonPositions = {
-                {155, 55}, // Stage 1
-                {275, 55}, {315, 55}, // Stage 2
-                {155, 170}, // Stage 3
-                {295, 170} // Stage 4
+        int startX = (width - BACKGROUND_WIDTH) / 2;
+        int startY = (height - BACKGROUND_HEIGHT) / 2;
+
+        int circleDiameter = 60;
+
+        float[][] circlePositions = {
+                {0.12f, 0.13f}, // Stage 1
+                {0.65f, 0.13f}, // Stage 2
+                {0.12f, 0.63f}, // Stage 3
+                {0.65f, 0.63f}  // Stage 4
         };
 
         int positionIndex = 0;
 
         for (Stage stage : questProgress.getStages()) {
+            if (positionIndex >= circlePositions.length) break;
+
+            float[] circlePosition = circlePositions[positionIndex];
+            int circleX = (int) (startX + circlePosition[0] * BACKGROUND_WIDTH);
+            int circleY = (int) (startY + circlePosition[1] * BACKGROUND_HEIGHT);
+
             List<QuestProgress.Ability> abilities = stage.getAbilities();
-            for (QuestProgress.Ability ability : abilities) {
-                if (positionIndex >= buttonPositions.length) break;
+            int numAbilities = abilities.size();
+            int radius = circleDiameter / 2;
 
-                int[] position = buttonPositions[positionIndex];
-                int buttonX = position[0];
-                int buttonY = position[1];
+            // Center buttons horizontally within the circle
+            int totalButtonWidth = numAbilities * buttonWidth + (numAbilities - 1) * 5;
+            int buttonStartX = circleX + radius - totalButtonWidth / 2;
+            int buttonY = circleY + radius - buttonHeight / 2;
 
+            for (int i = 0; i < numAbilities; i++) {
+                QuestProgress.Ability ability = abilities.get(i);
+                int buttonX = buttonStartX + i * (buttonWidth + 5);
+
+                boolean isLocked = !stage.isCompleted();
                 AbilityButton abilityButton = new AbilityButton(buttonX, buttonY, buttonWidth, buttonHeight,
-                        List.of(ability));
+                        List.of(ability), isLocked);
 
-                // Disable the button if the stage is not completed
-                abilityButton.active = stage.isCompleted();
-
-                // Set texture based on ability name
                 String abilityName = ability.getName().toLowerCase().replace(" ", "_");
-                ResourceLocation abilityTexture = new ResourceLocation(ManhuntMod.MOD_ID, "textures/gui/abilities/" + abilityName + ".png");
+                ResourceLocation abilityTexture = new ResourceLocation(ManhuntMod.MOD_ID,
+                        "textures/abilities/" + abilityName + ".png");
                 abilityButton.setTexture(abilityTexture);
 
                 abilityButtons.add(abilityButton);
-
-                positionIndex++;
             }
+
+            positionIndex++;
         }
     }
 
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         renderBackground(pGuiGraphics);
-
-        Minecraft.getInstance().getTextureManager().bindForSetup(BACKGROUND_TEXTURE);
+        Minecraft.getInstance().getTextureManager().bindForSetup(ModResources.BACKGROUND_TEXTURE);
         int x = (this.width - BACKGROUND_WIDTH) / 2;
         int y = (this.height - BACKGROUND_HEIGHT) / 2;
-        pGuiGraphics.blit(BACKGROUND_TEXTURE, x, y, 0, 0, BACKGROUND_WIDTH,
+        pGuiGraphics.blit(ModResources.BACKGROUND_TEXTURE, x, y, 0, 0, BACKGROUND_WIDTH,
                 BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
 
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
-        // Manually define positions for each stage name
-        int[][] stagePositions = {
-                {170, 35},
-                {310, 35},
-                {170, 150},
-                {310, 150}
+        float[][] stagePositions = {
+                {0.24f, 0.10f},
+                {0.77f, 0.10f},
+                {0.24f, 0.60f},
+                {0.77f, 0.60f}
         };
 
         for (int i = 0; i < questProgress.getStages().size(); i++) {
             if (i >= stagePositions.length) break;
 
             Stage stage = questProgress.getStages().get(i);
-            int[] stagePosition = stagePositions[i];
-            pGuiGraphics.drawCenteredString(Minecraft.getInstance().font, stage.getName(),
-                    stagePosition[0], stagePosition[1], 0xFFFFFF);
+            float[] stagePosition = stagePositions[i];
+            int stageX = (int) (x + stagePosition[0] * BACKGROUND_WIDTH);
+            int stageY = (int) (y + stagePosition[1] * BACKGROUND_HEIGHT);
+            pGuiGraphics.drawCenteredString(Minecraft.getInstance().font, stage.getName(), stageX, stageY, 0xFFFFFF);
         }
 
         for (AbilityButton abilityButton : abilityButtons) {

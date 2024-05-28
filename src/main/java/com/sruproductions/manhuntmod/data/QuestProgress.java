@@ -6,6 +6,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,6 +104,7 @@ public class QuestProgress {
 
     private List<Stage> stages;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(), "config", "manhuntmod", "quest_progress.json");
 
     public QuestProgress() {
         this.stages = new ArrayList<>();
@@ -110,18 +114,19 @@ public class QuestProgress {
         return stages;
     }
 
-    public void saveToFile(File file) throws IOException {
-        try (Writer writer = new FileWriter(file)) {
+    public void saveToFile() throws IOException {
+        Files.createDirectories(GLOBAL_SAVE_FILE.getParent());
+        try (Writer writer = new FileWriter(GLOBAL_SAVE_FILE.toFile())) {
             GSON.toJson(this, writer);
         }
     }
 
-    public void loadFromFile(File file, ResourceLocation defaultConfigResource) throws IOException {
-        if (!file.exists()) {
+    public void loadFromFile(ResourceLocation defaultConfigResource) throws IOException {
+        if (!Files.exists(GLOBAL_SAVE_FILE)) {
             loadDefaultStagesFromResource(defaultConfigResource);
-            saveToFile(file); // Save the default configuration to the file
+            saveToFile(); // Save the default configuration to the file
         } else {
-            try (Reader reader = new FileReader(file)) {
+            try (Reader reader = new FileReader(GLOBAL_SAVE_FILE.toFile())) {
                 QuestProgress loadedProgress = GSON.fromJson(reader, QuestProgress.class);
                 this.stages = loadedProgress.stages;
             }

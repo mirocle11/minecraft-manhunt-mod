@@ -25,13 +25,12 @@ import org.slf4j.Logger;
 @Mod(ManhuntMod.MOD_ID)
 public class ManhuntMod {
     public static final String MOD_ID = "manhuntmod";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     private static KeyMapping toggleScreenKey;
 
     public ManhuntMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
         modEventBus.addListener(this::commonSetup);

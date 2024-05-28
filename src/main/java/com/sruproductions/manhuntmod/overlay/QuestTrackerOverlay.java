@@ -1,5 +1,6 @@
 package com.sruproductions.manhuntmod.overlay;
 
+import com.sruproductions.manhuntmod.ModResources;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.data.QuestProgress.Quest;
 import com.sruproductions.manhuntmod.data.QuestProgress.Stage;
@@ -13,13 +14,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-import java.io.File;
 import java.io.IOException;
 
 @Mod.EventBusSubscriber(modid = "manhuntmod", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class QuestTrackerOverlay {
 
-    private static final File SAVE_FILE = new File(Minecraft.getInstance().gameDirectory, "quest_progress.json");
     private static final QuestProgress questProgress = new QuestProgress();
 
     public static void init(final FMLClientSetupEvent event) {
@@ -29,7 +28,7 @@ public class QuestTrackerOverlay {
 
     private static void loadQuestProgress() {
         try {
-            questProgress.loadFromFile(SAVE_FILE, new ResourceLocation("manhuntmod", "config/quest_progress.json"));
+            questProgress.loadFromFile(ModResources.QUEST_PROGRESS_JSON);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,5 +60,10 @@ public class QuestTrackerOverlay {
 
     private static void drawString(GuiGraphics guiGraphics, String text, int x, int y, int color) {
         guiGraphics.drawString(Minecraft.getInstance().font, text, x, y, color);
+    }
+
+    // Refresh the overlay data when the quest is completed
+    public static void refreshOverlay() {
+        loadQuestProgress();
     }
 }
