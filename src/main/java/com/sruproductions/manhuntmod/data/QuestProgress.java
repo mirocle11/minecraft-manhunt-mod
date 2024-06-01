@@ -104,7 +104,8 @@ public class QuestProgress {
 
     private List<Stage> stages;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(), "config", "manhuntmod", "quest_progress.json");
+    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(),
+            "config", "manhuntmod", "quest_progress.json");
 
     public QuestProgress() {
         this.stages = new ArrayList<>();

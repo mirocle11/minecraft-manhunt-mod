@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 version = mod_version
@@ -118,9 +119,25 @@ repositories {
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
-    // flatDir {
-    //     dir 'libs'
-    // }
+    flatDir {
+        dir 'libs'
+    }
+
+    maven { url = "https://maven.enginehub.org/repo/" }
+    maven { url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/" }
+    maven { url = "https://maven.theillusivec4.top" }
+    maven { url = "https://cursemaven.com" }
+    maven { url = "https://maven.blamejared.com" }
+    maven { url = "https://maven.kosmx.dev/" }
+    maven {
+        name = "Iron's Maven - Release"
+        url = "https://code.redspace.io/releases"
+    }
+
+    maven {
+        name = "Iron's Maven - Snapshots"
+        url = "https://code.redspace.io/snapshots"
+    }
 }
 
 dependencies {
@@ -147,6 +164,38 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     implementation 'com.google.code.gson:gson:2.8.6'
+
+    // IRONS SPELLS N SPELLBOOKS **********************************************************************************
+    compileOnly fg.deobf("io.redspace.ironsspellbooks:irons_spellbooks:${irons_spells_version}:api")
+    runtimeOnly fg.deobf("io.redspace.ironsspellbooks:irons_spellbooks:${irons_spells_version}")
+
+    // MIXINS *****************************************************************************************************
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+
+    // GECKOLIB ***************************************************************************************************
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${geckolib_version}")
+
+    // CAELUS *****************************************************************************************************
+    compileOnly fg.deobf("top.theillusivec4.caelus:caelus-forge:${caelus_version}:api")
+    runtimeOnly fg.deobf("top.theillusivec4.caelus:caelus-forge:${caelus_version}")
+
+    // PLAYER ANIMATOR ********************************************************************************************
+    implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:${player_animator_version}")
+
+    // If you want to run with tetra in dev comment the above line and uncomment the following 2 lines
+    //runtimeOnly fg.deobf("curse.maven:tetra-${tetra_version}")
+    //implementation fg.deobf("se.mickelus.mutil:mutil:${mutil_version}")
+
+    // CURIOS *****************************************************************************************************
+    implementation fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}:api")
+    //Uncomment the following line to run with Curios in dev
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
+
+    // Add the JAR files as dependencies
+//    implementation files('libs/caelus-forge-3.2.0+1.20.1.jar')
+//    implementation files('libs/player-animation-lib-forge-1.0.2-rc1+1.20.jar')
+//    implementation files('libs/geckolib-forge-1.20.1-4.4.4.jar')
+//    implementation files('libs/curios-forge-5.9.1+1.20.1.jar')
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
