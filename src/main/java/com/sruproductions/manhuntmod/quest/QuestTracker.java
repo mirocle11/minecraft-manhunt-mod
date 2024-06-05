@@ -3,6 +3,8 @@ package com.sruproductions.manhuntmod.quest;
 import com.sruproductions.manhuntmod.ManhuntMod;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.ModResources;
+import com.sruproductions.manhuntmod.network.NetworkHandler;
+import com.sruproductions.manhuntmod.network.packet.CommandPacket;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -23,6 +25,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.enchanting.EnchantmentLevelSetEvent;
@@ -38,6 +41,7 @@ import java.io.IOException;
 public class QuestTracker {
 
     private final QuestProgress questProgress;
+    private int ghastKillCount = 0;
 
     public QuestTracker() {
         this.questProgress = new QuestProgress();
@@ -84,7 +88,11 @@ public class QuestTracker {
             } else if (currentStageIndex == 2 && event.getEntity() instanceof Guardian) {
                 completeQuest(2, 2); // Complete stage 3, quest 3 (Kill 1 guardian)
             } else if (currentStageIndex == 3 && event.getEntity() instanceof Ghast) {
-                completeQuest(3, 2); // Complete stage 4, quest 3 (Kill 3 Ghasts)
+                ghastKillCount++;
+                if (ghastKillCount >= 3) {
+                    completeQuest(3, 2); // Complete stage 4, quest 3 (Kill 3 Ghasts)
+                    ghastKillCount = 0; // Reset counter after completing the quest
+                }
             }
         }
     }
@@ -140,12 +148,15 @@ public class QuestTracker {
     }
 
     @SubscribeEvent
-    public void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        int currentStageIndex = getCurrentStageIndex();
-        if (currentStageIndex == 1 && event.getEntity() instanceof Player && event.getLevel() instanceof Level) {
-            Player player = (Player) event.getEntity();
-            if (player.getMainHandItem().getItem() == Items.BOW) {
-                completeQuest(1, 0); // Complete stage 2, quest 1 (Shoot a hunter with a bow)
+    public void onPlayerShot(LivingHurtEvent event) {
+        if (event.getSource().getEntity() instanceof Player && event.getEntity() instanceof Player) {
+            Player attacker = (Player) event.getSource().getEntity();
+            Player victim = (Player) event.getEntity();
+            if (attacker.getMainHandItem().getItem() == Items.BOW) {
+                int currentStageIndex = getCurrentStageIndex();
+                if (currentStageIndex == 1) {
+                    completeQuest(1, 0); // Complete stage 2, quest 1 (Shoot a hunter with a bow)
+                }
             }
         }
     }
@@ -169,12 +180,29 @@ public class QuestTracker {
             stage.checkCompletion(); // Check if the stage is completed
 
             if (stage.isCompleted()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("Stage Completed: " + stage.getName()));
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("Stage Completed: " + stage.getName()));
+                }
+
+                switch (stage.getName()) {
+                    case "Stage 1" -> {
+                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn sonic_boom"));
+                    }
+                    case "Stage 2" -> {
+                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn sculk_tentacles"));
+                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn spider_aspect"));
+                    }
+                    case "Stage 3" -> {
+                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn acid_orb"));
+                    }
+                    case "Stage 4" -> {
+                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn starfall"));
+                    }
+                }
             }
 
             saveQuestProgress();
             QuestTrackerOverlay.refreshOverlay(); // Refresh the overlay
-//            Minecraft.getInstance().player.sendSystemMessage(Component.literal("Quest Completed: " + quest.getName()));
         }
     }
 
