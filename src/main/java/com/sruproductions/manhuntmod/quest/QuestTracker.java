@@ -8,8 +8,6 @@ import com.sruproductions.manhuntmod.network.packet.CommandPacket;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.Guardian;
@@ -34,6 +32,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import com.sruproductions.manhuntmod.screen.components.AbilityButton;
 
 import java.io.IOException;
 
@@ -181,23 +180,14 @@ public class QuestTracker {
 
             if (stage.isCompleted()) {
                 if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("Stage Completed: " + stage.getName()));
+                    showPopupMessage("Stage Completed: " + stage.getName());
                 }
 
-                switch (stage.getName()) {
-                    case "Stage 1" -> {
-                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn sonic_boom"));
-                    }
-                    case "Stage 2" -> {
-                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn sculk_tentacles"));
-                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn spider_aspect"));
-                    }
-                    case "Stage 3" -> {
-                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn acid_orb"));
-                    }
-                    case "Stage 4" -> {
-                        NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn starfall"));
-                    }
+                // Learn abilities and show popup
+                for (QuestProgress.Ability ability : stage.getAbilities()) {
+                    NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/learnSpell learn "
+                            + ability.getName().toLowerCase().replace(" ", "_")));
+                    showPopupMessage("You have gained the " + ability.getName() + " ability!");
                 }
             }
 
@@ -205,6 +195,11 @@ public class QuestTracker {
             QuestTrackerOverlay.refreshOverlay(); // Refresh the overlay
         }
     }
+
+    private void showPopupMessage(String message) {
+        Minecraft.getInstance().player.sendSystemMessage(Component.literal(message));
+    }
+
 
     private boolean isBed(Item item) {
         return item == Items.WHITE_BED ||

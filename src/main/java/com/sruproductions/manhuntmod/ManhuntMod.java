@@ -30,6 +30,7 @@ public class ManhuntMod {
     public static final String MOD_ID = "manhuntmod";
     public static final Logger LOGGER = LogUtils.getLogger();
     private static KeyMapping toggleScreenKey;
+    private static KeyMapping toggleQuestTrackerOverlayKey;
     public static KeyMapping castDevourKey;
     public static KeyMapping castSonicBoomKey;
     public static KeyMapping castSculkTentacles;
@@ -40,7 +41,7 @@ public class ManhuntMod {
     public ManhuntMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+//        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::onClientSetup);
@@ -61,6 +62,8 @@ public class ManhuntMod {
     private void registerKeyMappings(final RegisterKeyMappingsEvent event) {
         toggleScreenKey = new KeyMapping("key.manhuntmod.togglescreen", GLFW.GLFW_KEY_G, "key.categories.manhuntmod");
         event.register(toggleScreenKey);
+        toggleQuestTrackerOverlayKey = new KeyMapping("key.manhuntmod.togglequesttrackeroverlay", GLFW.GLFW_KEY_Y, "key.categories.manhuntmod");
+        event.register(toggleQuestTrackerOverlayKey);
         castDevourKey = new KeyMapping("key.manhuntmod.castdevour", GLFW.GLFW_KEY_Z, "key.categories.manhuntmod");
         event.register(castDevourKey);
         castSonicBoomKey = new KeyMapping("key.manhuntmod.castsonic_boom", GLFW.GLFW_KEY_X, "key.categories.manhuntmod");
@@ -87,6 +90,9 @@ public class ManhuntMod {
             if (mc.screen == null) {
                 mc.setScreen(new ToggleScreen());
             }
+        }
+        if (toggleQuestTrackerOverlayKey.consumeClick()) {
+            QuestTrackerOverlay.toggleVisibility();
         }
         if (castDevourKey.consumeClick()) {
             Minecraft mc = Minecraft.getInstance();

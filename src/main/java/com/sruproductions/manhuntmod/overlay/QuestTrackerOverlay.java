@@ -20,6 +20,7 @@ import java.io.IOException;
 public class QuestTrackerOverlay {
 
     private static final QuestProgress questProgress = new QuestProgress();
+    private static boolean visible = true;
 
     public static void init(final FMLClientSetupEvent event) {
         loadQuestProgress();
@@ -36,26 +37,32 @@ public class QuestTrackerOverlay {
 
     @SubscribeEvent
     public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
-        Minecraft mc = Minecraft.getInstance();
-        GuiGraphics guiGraphics = event.getGuiGraphics();
-        Stage currentStage = questProgress.getCurrentStage();
-        if (currentStage == null) {
-            return; // All stages are completed
-        }
+        if (visible) {
+            Minecraft mc = Minecraft.getInstance();
+            GuiGraphics guiGraphics = event.getGuiGraphics();
+            Stage currentStage = questProgress.getCurrentStage();
+            if (currentStage == null) {
+                return; // All stages are completed
+            }
 
-        int x = 10;
-        int y = 10;
+            int x = 10;
+            int y = 10;
 
-        // Render the current stage name
-        drawString(guiGraphics, currentStage.getName(), x, y, 0xFFFFFF);
-        y += 12;
-
-        // Render the quests
-        for (Quest quest : currentStage.getQuests()) {
-            int color = quest.isCompleted() ? 0x00FF00 : 0xFF0000; // Green if completed, red otherwise
-            drawString(guiGraphics, quest.getName(), x, y, color);
+            // Render the current stage name
+            drawString(guiGraphics, currentStage.getName(), x, y, 0xFFFFFF);
             y += 12;
+
+            // Render the quests
+            for (Quest quest : currentStage.getQuests()) {
+                int color = quest.isCompleted() ? 0x00FF00 : 0xFF0000; // Green if completed, red otherwise
+                drawString(guiGraphics, quest.getName(), x, y, color);
+                y += 12;
+            }
         }
+    }
+
+    public static void toggleVisibility() {
+        visible = !visible;
     }
 
     private static void drawString(GuiGraphics guiGraphics, String text, int x, int y, int color) {
