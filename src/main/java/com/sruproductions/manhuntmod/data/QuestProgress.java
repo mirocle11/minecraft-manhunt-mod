@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -13,6 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuestProgress {
+
+    private List<Stage> stages;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static Path GLOBAL_SAVE_FILE = null;
+
+    public QuestProgress() {
+        this.stages = new ArrayList<>();
+        this.GLOBAL_SAVE_FILE = getWorldSaveFile();
+    }
 
     public static class Quest {
         private String name;
@@ -102,15 +113,6 @@ public class QuestProgress {
         return null; // All stages are completed
     }
 
-    private List<Stage> stages;
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(),
-            "config", "manhuntmod", "quest_progress.json");
-
-    public QuestProgress() {
-        this.stages = new ArrayList<>();
-    }
-
     public List<Stage> getStages() {
         return stages;
     }
@@ -139,6 +141,16 @@ public class QuestProgress {
         try (Reader reader = new InputStreamReader(inputStream)) {
             QuestProgress loadedProgress = GSON.fromJson(reader, QuestProgress.class);
             this.stages = loadedProgress.stages;
+        }
+    }
+
+    private static Path getWorldSaveFile() {
+        MinecraftServer server = Minecraft.getInstance().getSingleplayerServer();
+        if (server != null) {
+            Path worldDir = server.getWorldPath(LevelResource.ROOT);
+            return worldDir.resolve("manhuntmod/quest_progress.json");
+        } else {
+            throw new IllegalStateException("Cannot determine world save directory. Server instance is null.");
         }
     }
 }

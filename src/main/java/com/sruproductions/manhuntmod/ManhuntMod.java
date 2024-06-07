@@ -1,6 +1,7 @@
 package com.sruproductions.manhuntmod;
 
 import com.mojang.logging.LogUtils;
+import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.network.NetworkHandler;
 import com.sruproductions.manhuntmod.network.packet.CommandPacket;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
@@ -13,7 +14,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -24,6 +25,8 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
+
+import java.io.IOException;
 
 @Mod(ManhuntMod.MOD_ID)
 public class ManhuntMod {
@@ -40,8 +43,6 @@ public class ManhuntMod {
 
     public ManhuntMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-//        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::onClientSetup);
@@ -79,8 +80,15 @@ public class ManhuntMod {
     }
 
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        // Server starting logic here
+    public void onServerStarting(ServerStartedEvent event) {
+        // Initialize QuestProgress and create the save file
+        try {
+            QuestProgress questProgress = new QuestProgress();
+            questProgress.saveToFile();
+            LOGGER.info("QuestProgress file created successfully.");
+        } catch (IOException e) {
+            LOGGER.error("Failed to create QuestProgress file.", e);
+        }
     }
 
     @SubscribeEvent
