@@ -1,9 +1,12 @@
 package com.sruproductions.manhuntmod.overlay;
 
+import com.sruproductions.manhuntmod.ManhuntMod;
 import com.sruproductions.manhuntmod.ModResources;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.data.QuestProgress.Quest;
 import com.sruproductions.manhuntmod.data.QuestProgress.Stage;
+import com.sruproductions.manhuntmod.data.QuestProgressManager;
+import com.sruproductions.manhuntmod.quest.QuestTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -16,10 +19,11 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import java.io.IOException;
 
-@Mod.EventBusSubscriber(modid = "manhuntmod", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = ManhuntMod.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class QuestTrackerOverlay {
 
-    private static final QuestProgress questProgress = new QuestProgress();
+    private static final QuestProgressManager questProgressManager = QuestProgressManager.getInstance();
+    private static final QuestProgress questProgress = questProgressManager.getQuestProgress();
     private static boolean visible = true;
 
     public static void init(final FMLClientSetupEvent event) {
@@ -29,14 +33,15 @@ public class QuestTrackerOverlay {
 
     private static void loadQuestProgress() {
         try {
-            questProgress.loadFromFile(ModResources.QUEST_PROGRESS_JSON);
+            questProgressManager.loadFromFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @SubscribeEvent
-    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
+    public void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
+        loadQuestProgress();
         if (visible) {
             Minecraft mc = Minecraft.getInstance();
             GuiGraphics guiGraphics = event.getGuiGraphics();

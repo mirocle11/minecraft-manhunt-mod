@@ -4,6 +4,7 @@ import com.sruproductions.manhuntmod.ManhuntMod;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.data.QuestProgress.Quest;
 import com.sruproductions.manhuntmod.data.QuestProgress.Stage;
+import com.sruproductions.manhuntmod.data.QuestProgressManager;
 import com.sruproductions.manhuntmod.screen.components.AbilityButton;
 import com.sruproductions.manhuntmod.ModResources;
 import net.minecraft.client.Minecraft;
@@ -22,18 +23,18 @@ public class ToggleScreen extends Screen {
     private static final int BACKGROUND_WIDTH = 260;
     private static final int BACKGROUND_HEIGHT = 229;
 
-    private final QuestProgress questProgress;
+    QuestProgressManager questProgressManager = QuestProgressManager.getInstance();
+    private final QuestProgress questProgress =questProgressManager.getQuestProgress();
     private List<AbilityButton> abilityButtons;
 
     public ToggleScreen() {
         super(Component.literal("Toggle Screen"));
-        this.questProgress = new QuestProgress();
         loadQuestProgress();
     }
 
     private void loadQuestProgress() {
         try {
-            questProgress.loadFromFile(ModResources.QUEST_PROGRESS_JSON);
+            questProgressManager.loadFromFile();
         } catch (IOException e) {
             ManhuntMod.LOGGER.error("Failed to load quest progress", e);
         }
@@ -41,7 +42,7 @@ public class ToggleScreen extends Screen {
 
     private void saveQuestProgress() {
         try {
-            questProgress.saveToFile();
+            questProgressManager.saveToFile();
         } catch (IOException e) {
             ManhuntMod.LOGGER.error("Failed to save quest progress", e);
         }

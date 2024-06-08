@@ -1,6 +1,7 @@
 package com.sruproductions.manhuntmod;
 
 import com.mojang.logging.LogUtils;
+import com.sruproductions.manhuntmod.data.QuestProgressManager;
 import com.sruproductions.manhuntmod.network.NetworkHandler;
 import com.sruproductions.manhuntmod.network.packet.CommandPacket;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
@@ -14,6 +15,7 @@ import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -80,7 +82,18 @@ public class ManhuntMod {
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        // Server starting logic here
+        // Set the server instance and load quest data when server starts
+        QuestProgressManager.getInstance().setServer(event.getServer());
+        QuestTracker questTracker = QuestTracker.getInstance();
+        questTracker.loadQuestProgress();
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        // Save quest data when server stops
+        QuestProgressManager.getInstance().setServer(event.getServer());
+        QuestTracker questTracker = QuestTracker.getInstance();
+        questTracker.saveQuestProgress();
     }
 
     @SubscribeEvent

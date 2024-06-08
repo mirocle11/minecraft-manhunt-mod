@@ -21,50 +21,76 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.enchanting.EnchantmentLevelSetEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import com.sruproductions.manhuntmod.screen.components.AbilityButton;
+import com.sruproductions.manhuntmod.data.QuestProgressManager;
 
 import java.io.IOException;
 
-@Mod.EventBusSubscriber(modid = "manhuntmod", bus = Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = ManhuntMod.MOD_ID, bus = Bus.MOD, value = Dist.CLIENT)
 public class QuestTracker {
 
-    private final QuestProgress questProgress;
+    static QuestProgressManager questProgressManager = QuestProgressManager.getInstance();
+    private final QuestProgress questProgress = questProgressManager.getQuestProgress();
+
     private int ghastKillCount = 0;
 
+    private static QuestTracker instance;
+    public static QuestTracker getInstance() {
+        if (instance == null) {
+            instance = new QuestTracker();
+        }
+        return instance;
+    }
+
     public QuestTracker() {
-        this.questProgress = new QuestProgress();
         loadQuestProgress();
     }
 
-    private void loadQuestProgress() {
+    public void loadQuestProgress() {
         try {
-            questProgress.loadFromFile(ModResources.QUEST_PROGRESS_JSON);
+            questProgressManager.loadFromFile();
         } catch (IOException e) {
             ManhuntMod.LOGGER.error("Failed to load quest progress", e);
         }
     }
 
-    private void saveQuestProgress() {
+    public void saveQuestProgress() {
         try {
-            questProgress.saveToFile();
+            questProgressManager.saveToFile();
         } catch (IOException e) {
             ManhuntMod.LOGGER.error("Failed to save quest progress", e);
         }
     }
 
     @SubscribeEvent
-    public static void onCommonSetup(FMLCommonSetupEvent event) {
+    public void onServerStarting(ServerStartingEvent event) {
+        // Set the server instance and load quest data when server starts
+        questProgressManager.setServer(event.getServer());
+        QuestTracker questTracker = new QuestTracker();
+        questTracker.loadQuestProgress();
+        MinecraftForge.EVENT_BUS.register(questTracker);
+    }
+
+    @SubscribeEvent
+    public void onServerStopped(ServerStoppedEvent event) {
+        // Save quest data when server stops
+        questProgressManager.setServer(event.getServer());
+        QuestTracker questTracker = new QuestTracker();
+        questTracker.saveQuestProgress();
+    }
+
+    @SubscribeEvent
+    public void onCommonSetup(FMLCommonSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new QuestTracker());
     }
 
