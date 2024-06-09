@@ -1,5 +1,6 @@
 package com.sruproductions.manhuntmod.overlay;
 
+import com.sruproductions.manhuntmod.ManhuntMod;
 import com.sruproductions.manhuntmod.ModResources;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.data.QuestProgress.Quest;
@@ -16,10 +17,10 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import java.io.IOException;
 
-@Mod.EventBusSubscriber(modid = "manhuntmod", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = ManhuntMod.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class QuestTrackerOverlay {
 
-    private static final QuestProgress questProgress = new QuestProgress();
+    public static QuestProgress questProgress = QuestProgress.getInstance();
     private static boolean visible = true;
 
     public static void init(final FMLClientSetupEvent event) {

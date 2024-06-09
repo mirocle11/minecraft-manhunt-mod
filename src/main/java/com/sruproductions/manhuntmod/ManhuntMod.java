@@ -1,6 +1,8 @@
 package com.sruproductions.manhuntmod;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
+import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.network.NetworkHandler;
 import com.sruproductions.manhuntmod.network.packet.CommandPacket;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
@@ -9,6 +11,7 @@ import com.sruproductions.manhuntmod.screen.ToggleScreen;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.InputEvent;
@@ -25,23 +28,26 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Mod(ManhuntMod.MOD_ID)
 public class ManhuntMod {
     public static final String MOD_ID = "manhuntmod";
     public static final Logger LOGGER = LogUtils.getLogger();
     private static KeyMapping toggleScreenKey;
     private static KeyMapping toggleQuestTrackerOverlayKey;
+    private static final Map<String, KeyMapping> keyBindings = new HashMap<>();
     public static KeyMapping castDevourKey;
     public static KeyMapping castSonicBoomKey;
     public static KeyMapping castSculkTentacles;
     public static KeyMapping castSpiderAspect;
     public static KeyMapping castAcidOrb;
     public static KeyMapping castStarfall;
+    QuestProgress questProgress = QuestProgress.getInstance();
 
     public ManhuntMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-//        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::onClientSetup);
@@ -57,6 +63,8 @@ public class ManhuntMod {
 
     private void onClientSetup(final FMLClientSetupEvent event) {
         QuestTrackerOverlay.init(event);
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addListener(this::registerKeyMappings);
     }
 
     private void registerKeyMappings(final RegisterKeyMappingsEvent event) {
@@ -73,15 +81,32 @@ public class ManhuntMod {
         castSpiderAspect = new KeyMapping("key.manhuntmod.castspider_aspect", GLFW.GLFW_KEY_V, "key.categories.manhuntmod");
         event.register(castSpiderAspect);
         castAcidOrb = new KeyMapping("key.manhuntmod.castacid_orb", GLFW.GLFW_KEY_B, "key.categories.manhuntmod");
-        event.register(castSpiderAspect);
+        event.register(castAcidOrb);
         castStarfall = new KeyMapping("key.manhuntmod.caststarfall", GLFW.GLFW_KEY_N, "key.categories.manhuntmod");
         event.register(castStarfall);
+
+//        keyBindings.put("devour", castDevourKey);
+//        keyBindings.put("sonic_boom", castSonicBoomKey);
+//        keyBindings.put("sculk_tentacles", castSculkTentacles);
+//        keyBindings.put("spider_aspect", castSpiderAspect);
+//        keyBindings.put("acid_orb", castAcidOrb);
+//        keyBindings.put("starfall", castStarfall);
     }
 
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        // Server starting logic here
-    }
+//    public static KeyMapping getKeyBinding(String abilityName) {
+//        return keyBindings.get(abilityName);
+//    }
+//
+//    public static void updateKeyBinding(String abilityName, String keyName) {
+//        KeyMapping keyMapping = keyBindings.get(abilityName);
+//        if (keyMapping != null) {
+//            int keyCode = GLFW.glfwGetKeyScancode(keyName.charAt(0));
+//            if (keyCode != -1) {
+//                keyMapping.setKey(InputConstants.getKey(keyCode, 0));
+//                KeyMapping.resetMapping();
+//            }
+//        }
+//    }
 
     @SubscribeEvent
     public void onKeyInput(InputEvent.Key event) {
@@ -101,42 +126,64 @@ public class ManhuntMod {
             }
         }
         if (castSonicBoomKey.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player instanceof LocalPlayer) {
-                NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s sonic_boom 4"));
+            if (questProgress.isAbilityUnlocked("sonic_boom")) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player instanceof LocalPlayer) {
+                    NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s sonic_boom 4"));
+                }
+            } else {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("You haven't learned this spell yet"));
+                }
             }
         }
         if (castSculkTentacles.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player instanceof LocalPlayer) {
-                NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s sculk_tentacles 4"));
+            if (questProgress.isAbilityUnlocked("sculk_tentacles")) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player instanceof LocalPlayer) {
+                    NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s sculk_tentacles 4"));
+                }
+            } else {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("You haven't learned this spell yet"));
+                }
             }
         }
         if (castSpiderAspect.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player instanceof LocalPlayer) {
-                NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s spider_aspect 4"));
+            if (questProgress.isAbilityUnlocked("spider_aspect")) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player instanceof LocalPlayer) {
+                    NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s spider_aspect 4"));
+                }
+            } else {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("You haven't learned this spell yet"));
+                }
             }
         }
         if (castAcidOrb.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player instanceof LocalPlayer) {
-                NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s acid_orb 4"));
+            if (questProgress.isAbilityUnlocked("acid_orb")) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player instanceof LocalPlayer) {
+                    NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s acid_orb 4"));
+                }
+            } else {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("You haven't learned this spell yet"));
+                }
             }
         }
         if (castStarfall.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player instanceof LocalPlayer) {
-                NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s starfall 4"));
+            if (questProgress.isAbilityUnlocked("starfall")) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player instanceof LocalPlayer) {
+                    NetworkHandler.INSTANCE.sendToServer(new CommandPacket("/cast @s starfall 4"));
+                }
+            } else {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("You haven't learned this spell yet"));
+                }
             }
-        }
-    }
-
-    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            // Additional client setup code here
         }
     }
 }

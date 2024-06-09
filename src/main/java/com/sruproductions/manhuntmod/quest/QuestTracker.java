@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -29,21 +28,18 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.enchanting.EnchantmentLevelSetEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import com.sruproductions.manhuntmod.screen.components.AbilityButton;
 
 import java.io.IOException;
 
 @Mod.EventBusSubscriber(modid = "manhuntmod", bus = Bus.MOD, value = Dist.CLIENT)
 public class QuestTracker {
 
-    private final QuestProgress questProgress;
+    QuestProgress questProgress = QuestProgress.getInstance();
     private int ghastKillCount = 0;
 
     public QuestTracker() {
-        this.questProgress = new QuestProgress();
         loadQuestProgress();
     }
 

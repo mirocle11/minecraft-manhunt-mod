@@ -8,6 +8,7 @@ import com.sruproductions.manhuntmod.screen.components.AbilityButton;
 import com.sruproductions.manhuntmod.ModResources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,12 +23,11 @@ public class ToggleScreen extends Screen {
     private static final int BACKGROUND_WIDTH = 260;
     private static final int BACKGROUND_HEIGHT = 229;
 
-    private final QuestProgress questProgress;
+    QuestProgress questProgress = QuestProgress.getInstance();
     private List<AbilityButton> abilityButtons;
 
     public ToggleScreen() {
         super(Component.literal("Toggle Screen"));
-        this.questProgress = new QuestProgress();
         loadQuestProgress();
     }
 
@@ -50,6 +50,13 @@ public class ToggleScreen extends Screen {
     @Override
     protected void init() {
         initAbilityButtons();
+//        this.addRenderableWidget(new Button.Builder(Component.literal("Configure Key Bindings"), button -> openKeyBindingScreen())
+//                .bounds(this.width / 2 - 100, this.height / 2 - 10, 200, 20)
+//                .build());
+    }
+
+    private void openKeyBindingScreen() {
+//        this.minecraft.setScreen(new KeyBindingScreen(this));
     }
 
     private void initAbilityButtons() {

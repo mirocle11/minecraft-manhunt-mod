@@ -14,45 +14,18 @@ import java.util.List;
 
 public class QuestProgress {
 
-    public static class Quest {
-        private String name;
-        private boolean completed;
-
-        public Quest(String name, boolean completed) {
-            this.name = name;
-            this.completed = completed;
+    private static QuestProgress instance;
+    public static QuestProgress getInstance() {
+        if (instance == null) {
+            instance = new QuestProgress();
         }
-
-        public String getName() {
-            return name;
-        }
-
-        public boolean isCompleted() {
-            return completed;
-        }
-
-        public void setCompleted(boolean completed) {
-            this.completed = completed;
-        }
+        return instance;
     }
 
-    public static class Ability {
-        private String name;
-        private String description;
-
-        public Ability(String name, String description) {
-            this.name = name;
-            this.description = description;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
+    private List<Stage> stages;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(),
+            "config", "manhuntmod", "quest_progress.json");
 
     public static class Stage {
         private String name;
@@ -93,6 +66,46 @@ public class QuestProgress {
         }
     }
 
+    public static class Quest {
+        private String name;
+        private boolean completed;
+
+        public Quest(String name, boolean completed) {
+            this.name = name;
+            this.completed = completed;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isCompleted() {
+            return completed;
+        }
+
+        public void setCompleted(boolean completed) {
+            this.completed = completed;
+        }
+    }
+
+    public static class Ability {
+        private String name;
+        private String description;
+
+        public Ability(String name, String description) {
+            this.name = name;
+            this.description = description;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
+
     public Stage getCurrentStage() {
         for (Stage stage : stages) {
             if (!stage.isCompleted()) {
@@ -102,17 +115,23 @@ public class QuestProgress {
         return null; // All stages are completed
     }
 
-    private List<Stage> stages;
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(),
-            "config", "manhuntmod", "quest_progress.json");
-
     public QuestProgress() {
         this.stages = new ArrayList<>();
     }
 
     public List<Stage> getStages() {
         return stages;
+    }
+
+    public boolean isAbilityUnlocked(String abilityName) {
+        for (Stage stage : stages) {
+            for (Ability ability : stage.getAbilities()) {
+                if (ability.getName().toLowerCase().replace(" ", "_").equals(abilityName)) {
+                    return stage.isCompleted();
+                }
+            }
+        }
+        return false;
     }
 
     public void saveToFile() throws IOException {
