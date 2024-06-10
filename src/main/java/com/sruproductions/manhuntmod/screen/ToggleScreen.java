@@ -50,13 +50,13 @@ public class ToggleScreen extends Screen {
     @Override
     protected void init() {
         initAbilityButtons();
-//        this.addRenderableWidget(new Button.Builder(Component.literal("Configure Key Bindings"), button -> openKeyBindingScreen())
-//                .bounds(this.width / 2 - 100, this.height / 2 - 10, 200, 20)
-//                .build());
+        this.addRenderableWidget(new Button.Builder(Component.literal("Configure Key Bindings"), button -> openKeyBindingScreen())
+                .bounds(this.width / 2 - 100, this.height / 2 - 10, 200, 20)
+                .build());
     }
 
     private void openKeyBindingScreen() {
-//        this.minecraft.setScreen(new KeyBindingScreen(this));
+        this.minecraft.setScreen(new KeyBindingScreen(this));
     }
 
     private void initAbilityButtons() {

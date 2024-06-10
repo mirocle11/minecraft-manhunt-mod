@@ -85,28 +85,70 @@ public class ManhuntMod {
         castStarfall = new KeyMapping("key.manhuntmod.caststarfall", GLFW.GLFW_KEY_N, "key.categories.manhuntmod");
         event.register(castStarfall);
 
-//        keyBindings.put("devour", castDevourKey);
-//        keyBindings.put("sonic_boom", castSonicBoomKey);
-//        keyBindings.put("sculk_tentacles", castSculkTentacles);
-//        keyBindings.put("spider_aspect", castSpiderAspect);
-//        keyBindings.put("acid_orb", castAcidOrb);
-//        keyBindings.put("starfall", castStarfall);
+        keyBindings.put("devour", castDevourKey);
+        keyBindings.put("sonic_boom", castSonicBoomKey);
+        keyBindings.put("sculk_tentacles", castSculkTentacles);
+        keyBindings.put("spider_aspect", castSpiderAspect);
+        keyBindings.put("acid_orb", castAcidOrb);
+        keyBindings.put("starfall", castStarfall);
     }
 
-//    public static KeyMapping getKeyBinding(String abilityName) {
-//        return keyBindings.get(abilityName);
-//    }
-//
-//    public static void updateKeyBinding(String abilityName, String keyName) {
-//        KeyMapping keyMapping = keyBindings.get(abilityName);
-//        if (keyMapping != null) {
-//            int keyCode = GLFW.glfwGetKeyScancode(keyName.charAt(0));
-//            if (keyCode != -1) {
-//                keyMapping.setKey(InputConstants.getKey(keyCode, 0));
-//                KeyMapping.resetMapping();
-//            }
-//        }
-//    }
+    public static KeyMapping getKeyBinding(String abilityName) {
+        return keyBindings.get(abilityName);
+    }
+
+    public static void updateKeyBinding(String abilityName, String keyName) {
+        KeyMapping keyMapping = keyBindings.get(abilityName);
+        if (keyMapping != null) {
+            int keyCode = mapCharacterToGLFWKey(keyName.charAt(0));
+            if (keyCode != -1) {
+                keyMapping.setKey(InputConstants.getKey(keyCode, 0));
+                KeyMapping.resetMapping();
+            }
+        }
+    }
+
+    private static int mapCharacterToGLFWKey(char character) {
+        switch (character) {
+            case 'A': return GLFW.GLFW_KEY_A;
+            case 'B': return GLFW.GLFW_KEY_B;
+            case 'C': return GLFW.GLFW_KEY_C;
+            case 'D': return GLFW.GLFW_KEY_D;
+            case 'E': return GLFW.GLFW_KEY_E;
+            case 'F': return GLFW.GLFW_KEY_F;
+            case 'G': return GLFW.GLFW_KEY_G;
+            case 'H': return GLFW.GLFW_KEY_H;
+            case 'I': return GLFW.GLFW_KEY_I;
+            case 'J': return GLFW.GLFW_KEY_J;
+            case 'K': return GLFW.GLFW_KEY_K;
+            case 'L': return GLFW.GLFW_KEY_L;
+            case 'M': return GLFW.GLFW_KEY_M;
+            case 'N': return GLFW.GLFW_KEY_N;
+            case 'O': return GLFW.GLFW_KEY_O;
+            case 'P': return GLFW.GLFW_KEY_P;
+            case 'Q': return GLFW.GLFW_KEY_Q;
+            case 'R': return GLFW.GLFW_KEY_R;
+            case 'S': return GLFW.GLFW_KEY_S;
+            case 'T': return GLFW.GLFW_KEY_T;
+            case 'U': return GLFW.GLFW_KEY_U;
+            case 'V': return GLFW.GLFW_KEY_V;
+            case 'W': return GLFW.GLFW_KEY_W;
+            case 'X': return GLFW.GLFW_KEY_X;
+            case 'Y': return GLFW.GLFW_KEY_Y;
+            case 'Z': return GLFW.GLFW_KEY_Z;
+            case '0': return GLFW.GLFW_KEY_0;
+            case '1': return GLFW.GLFW_KEY_1;
+            case '2': return GLFW.GLFW_KEY_2;
+            case '3': return GLFW.GLFW_KEY_3;
+            case '4': return GLFW.GLFW_KEY_4;
+            case '5': return GLFW.GLFW_KEY_5;
+            case '6': return GLFW.GLFW_KEY_6;
+            case '7': return GLFW.GLFW_KEY_7;
+            case '8': return GLFW.GLFW_KEY_8;
+            case '9': return GLFW.GLFW_KEY_9;
+            default: return -1;
+        }
+    }
 
     @SubscribeEvent
     public void onKeyInput(InputEvent.Key event) {
