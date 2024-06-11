@@ -50,8 +50,14 @@ public class ToggleScreen extends Screen {
     @Override
     protected void init() {
         initAbilityButtons();
-        this.addRenderableWidget(new Button.Builder(Component.literal("Configure Key Bindings"), button -> openKeyBindingScreen())
-                .bounds(this.width / 2 - 100, this.height / 2 - 10, 200, 20)
+
+        int buttonWidth = 80;
+        int buttonHeight = 20;
+        int xPosition = this.width - buttonWidth - 10;
+        int yPosition = this.height - buttonHeight - 10;
+
+        this.addRenderableWidget(new Button.Builder(Component.literal("Keybinds"), button -> openKeyBindingScreen())
+                .bounds(xPosition, yPosition, buttonWidth, buttonHeight)
                 .build());
     }
 

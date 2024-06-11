@@ -44,11 +44,6 @@ public class KeyBindingScreen extends Screen {
             keyBindingInputs.put(ability, input);
             this.addRenderableWidget(input);
 
-            this.addRenderableWidget(new Button.Builder(Component.literal("Set"), button -> {
-                currentAbility = ability;
-                Minecraft.getInstance().setScreen(null);
-            }).bounds(this.width / 2 + 110, y, 60, 20).build());
-
             y += 30;
         }
 
@@ -64,7 +59,7 @@ public class KeyBindingScreen extends Screen {
     private void saveKeyBindings() {
         for (String ability : ABILITIES) {
             EditBox input = keyBindingInputs.get(ability);
-            String keyName = input.getValue();
+            String keyName = input.getValue().toUpperCase();
             ManhuntMod.updateKeyBinding(ability, keyName);
         }
         onClose();
@@ -79,6 +74,13 @@ public class KeyBindingScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         this.renderBackground(guiGraphics);
         guiGraphics.drawCenteredString(this.font, this.title.getString(), this.width / 2, 15, 0xFFFFFF);
+
+        int y = 50;
+        for (String ability : ABILITIES) {
+            guiGraphics.drawString(this.font, Component.literal(ability).getString(), this.width / 2 - 190, y + 5, 0xFFFFFF);
+            y += 30;
+        }
+
         super.render(guiGraphics, mouseX, mouseY, delta);
     }
 
