@@ -1,7 +1,6 @@
 package com.sruproductions.manhuntmod.entity;
 
 import com.sruproductions.manhuntmod.ManhuntMod;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
@@ -22,8 +21,7 @@ public class ModEntities {
                     .build("custom_player"));
 
     private static CustomPlayerEntity createCustomPlayerEntity(EntityType<CustomPlayerEntity> type, Level world) {
-        // Use default BlockPos, rotation, and GameProfile for now
-        return new CustomPlayerEntity(type, world, BlockPos.ZERO, 0.0F, new GameProfile(null, "custom_player"));
+        return new CustomPlayerEntity(world, new GameProfile(null, "custom_player"));
     }
 
     @SubscribeEvent

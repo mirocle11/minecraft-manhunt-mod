@@ -1,8 +1,7 @@
 package com.sruproductions.manhuntmod.entity;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.level.Level;
 import com.mojang.authlib.GameProfile;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
@@ -14,15 +13,11 @@ import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 
-public class CustomPlayerEntity extends Player implements GeoAnimatable {
+public class CustomPlayerEntity extends AbstractClientPlayer implements GeoAnimatable {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    public CustomPlayerEntity(EntityType<? extends Player> type, Level world, BlockPos pos, float yRot, GameProfile gameProfile) {
-        super(world, pos, yRot, gameProfile);
-    }
-
-    public CustomPlayerEntity(Level world, BlockPos pos, float yRot, GameProfile gameProfile) {
-        this(EntityType.PLAYER, world, pos, yRot, gameProfile);
+    public CustomPlayerEntity(Level world, GameProfile gameProfile) {
+        super((ClientLevel) world, gameProfile);
     }
 
     @Override
