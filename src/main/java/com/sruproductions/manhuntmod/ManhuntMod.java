@@ -8,11 +8,14 @@ import com.sruproductions.manhuntmod.network.packet.CommandPacket;
 import com.sruproductions.manhuntmod.overlay.QuestTrackerOverlay;
 import com.sruproductions.manhuntmod.quest.QuestTracker;
 import com.sruproductions.manhuntmod.screen.ToggleScreen;
+import com.sruproductions.manhuntmod.client.renderer.CustomPlayerRenderer;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -48,6 +51,7 @@ public class ManhuntMod {
 
     public ManhuntMod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModEventSubscriber.ENTITY_TYPES.register(FMLJavaModLoadingContext.get().getModEventBus());
 
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::onClientSetup);
@@ -65,6 +69,18 @@ public class ManhuntMod {
         QuestTrackerOverlay.init(event);
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::registerKeyMappings);
+    }
+
+    private void setupClient(FMLClientSetupEvent event) {
+        // Register renderers
+//        net.minecraftforge.client.event.EntityRenderersEvent.RegisterRenderers event -> {
+//            event.registerEntityRenderer(ModEventSubscriber.CUSTOM_PLAYER, CustomPlayerRenderer::new);
+//        };
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEventSubscriber.CUSTOM_PLAYER.get(), CustomPlayerRenderer::new);
     }
 
     private void registerKeyMappings(final RegisterKeyMappingsEvent event) {
