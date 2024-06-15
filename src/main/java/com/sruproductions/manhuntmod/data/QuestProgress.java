@@ -2,13 +2,16 @@ package com.sruproductions.manhuntmod.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +27,14 @@ public class QuestProgress {
 
     private List<Stage> stages;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path GLOBAL_SAVE_FILE = Paths.get(Minecraft.getInstance().gameDirectory.getPath(),
-            "config", "manhuntmod", "quest_progress.json");
+    private static final Path GLOBAL_SAVE_FILE = getGlobalSaveFilePath();
+
+    private static Path getGlobalSaveFilePath() {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            return FMLPaths.CONFIGDIR.get().resolve("manhuntmod").resolve("quest_progress.json");
+        }
+        return null;
+    }
 
     public static class Stage {
         private String name;
@@ -63,6 +72,13 @@ public class QuestProgress {
                 }
             }
             completed = true;
+        }
+
+        public void resetQuests() {
+            for (Quest quest : quests) {
+                quest.setCompleted(false);
+            }
+            this.completed = false;
         }
     }
 
@@ -134,30 +150,49 @@ public class QuestProgress {
         return false;
     }
 
-    public void saveToFile() throws IOException {
-        Files.createDirectories(GLOBAL_SAVE_FILE.getParent());
-        try (Writer writer = new FileWriter(GLOBAL_SAVE_FILE.toFile())) {
-            GSON.toJson(this, writer);
-        }
-    }
-
-    public void loadFromFile(ResourceLocation defaultConfigResource) throws IOException {
-        if (!Files.exists(GLOBAL_SAVE_FILE)) {
-            loadDefaultStagesFromResource(defaultConfigResource);
-            saveToFile(); // Save the default configuration to the file
-        } else {
-            try (Reader reader = new FileReader(GLOBAL_SAVE_FILE.toFile())) {
-                QuestProgress loadedProgress = GSON.fromJson(reader, QuestProgress.class);
-                this.stages = loadedProgress.stages;
+    public void resetProgressToStage(int stageIndex) {
+        if (stageIndex >= 0 && stageIndex < stages.size()) {
+            for (int i = 0; i <= stageIndex; i++) {
+                stages.get(i).resetQuests();
+            }
+            for (int i = stageIndex + 1; i < stages.size(); i++) {
+                stages.get(i).resetQuests();
+                stages.get(i).completed = false;
             }
         }
     }
 
+    public void saveToFile() throws IOException {
+        if (FMLEnvironment.dist == Dist.CLIENT && GLOBAL_SAVE_FILE != null) {
+            Files.createDirectories(GLOBAL_SAVE_FILE.getParent());
+            try (Writer writer = new FileWriter(GLOBAL_SAVE_FILE.toFile())) {
+                GSON.toJson(this, writer);
+            }
+        }
+    }
+
+    public void loadFromFile(ResourceLocation defaultConfigResource) throws IOException {
+        if (FMLEnvironment.dist == Dist.CLIENT && GLOBAL_SAVE_FILE != null) {
+            if (!Files.exists(GLOBAL_SAVE_FILE)) {
+                loadDefaultStagesFromResource(defaultConfigResource);
+                saveToFile(); // Save the default configuration to the file
+            } else {
+                try (Reader reader = new FileReader(GLOBAL_SAVE_FILE.toFile())) {
+                    QuestProgress loadedProgress = GSON.fromJson(reader, QuestProgress.class);
+                    this.stages = loadedProgress.stages;
+                }
+            }
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
     public void loadDefaultStagesFromResource(ResourceLocation resourceLocation) throws IOException {
-        InputStream inputStream = Minecraft.getInstance().getResourceManager().open(resourceLocation);
-        try (Reader reader = new InputStreamReader(inputStream)) {
-            QuestProgress loadedProgress = GSON.fromJson(reader, QuestProgress.class);
-            this.stages = loadedProgress.stages;
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            InputStream inputStream = Minecraft.getInstance().getResourceManager().open(resourceLocation);
+            try (Reader reader = new InputStreamReader(inputStream)) {
+                QuestProgress loadedProgress = GSON.fromJson(reader, QuestProgress.class);
+                this.stages = loadedProgress.stages;
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.sruproductions.manhuntmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
+import com.sruproductions.manhuntmod.commands.ResetCommand;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.network.NetworkHandler;
 import com.sruproductions.manhuntmod.network.packet.CommandPacket;
@@ -13,9 +14,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,6 +28,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
@@ -50,25 +54,30 @@ public class ManhuntMod {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::onClientSetup);
-        modEventBus.addListener(this::registerKeyMappings);
 
-        MinecraftForge.EVENT_BUS.register(this);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            modEventBus.addListener(this::onClientSetup);
+            modEventBus.addListener(this::registerKeyMappings);
+            MinecraftForge.EVENT_BUS.register(this);
+            MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+            MinecraftForge.EVENT_BUS.register(new QuestTracker());
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new QuestTracker());
         NetworkHandler.register();
     }
 
     private void onClientSetup(final FMLClientSetupEvent event) {
         QuestTrackerOverlay.init(event);
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::registerKeyMappings);
+    }
+
+    private void registerCommands(RegisterCommandsEvent event) {
+        ResetCommand.register(event.getDispatcher());
     }
 
     private void registerKeyMappings(final RegisterKeyMappingsEvent event) {
-        toggleScreenKey = new KeyMapping("key.manhuntmod.togglescreen", GLFW.GLFW_KEY_G, "key.categories.manhuntmod");
+        toggleScreenKey = new KeyMapping("key.manhuntmod.togglescreen", GLFW.GLFW_KEY_H, "key.categories.manhuntmod");
         event.register(toggleScreenKey);
         toggleQuestTrackerOverlayKey = new KeyMapping("key.manhuntmod.togglequesttrackeroverlay", GLFW.GLFW_KEY_Y, "key.categories.manhuntmod");
         event.register(toggleQuestTrackerOverlayKey);
@@ -151,6 +160,7 @@ public class ManhuntMod {
     }
 
     @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
     public void onKeyInput(InputEvent.Key event) {
         if (toggleScreenKey.consumeClick()) {
             Minecraft mc = Minecraft.getInstance();
