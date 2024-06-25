@@ -2,6 +2,7 @@ package com.sruproductions.manhuntmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
+import com.sruproductions.manhuntmod.client.ClientEventSubscriber;
 import com.sruproductions.manhuntmod.data.QuestProgress;
 import com.sruproductions.manhuntmod.entity.ModEntities;
 import com.sruproductions.manhuntmod.network.NetworkHandler;
@@ -67,6 +68,7 @@ public class ManhuntMod {
         QuestTrackerOverlay.init(event);
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::registerKeyMappings);
+        modEventBus.register(ClientEventSubscriber.class);
     }
 
     private void registerKeyMappings(final RegisterKeyMappingsEvent event) {
