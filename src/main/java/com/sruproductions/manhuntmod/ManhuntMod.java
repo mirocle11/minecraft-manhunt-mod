@@ -29,6 +29,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
+import software.bernie.geckolib.GeckoLib;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +58,7 @@ public class ManhuntMod {
         modEventBus.addListener(this::registerKeyMappings);
 
         MinecraftForge.EVENT_BUS.register(this);
+        GeckoLib.initialize();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
